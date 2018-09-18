@@ -14,3 +14,4 @@ spout 在发送数据的时候带上msgid<br>
 <br>
 推荐使用IBasicBolt或BaseBasicBolt， 因为IBasicBolt 自动封装了OutputCollector.ack(tuple), 处理失败时，抛出FailedException，则自动执行OutputCollector.fail(tuple)
 
+   
