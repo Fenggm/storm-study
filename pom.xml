@@ -11,6 +11,8 @@
     <modules>
         <module>storm-hdfs</module>
         <module>stormCron-mysql</module>
+        <module>flumeInterceptor</module>
+        <module>logMonitor</module>
     </modules>
 
 
