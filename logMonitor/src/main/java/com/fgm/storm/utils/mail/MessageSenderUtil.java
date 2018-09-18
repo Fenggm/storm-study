@@ -89,12 +89,11 @@ public class MessageSenderUtil  implements Serializable {
         mailMessage.setSentDate(new Date());// 设置邮件消息发送的时间
         return mailMessage;
     }
-    
-    
-    
-    
-    
-    
+
+    /**
+     * 测试邮箱发送util是否可用
+     * @param args
+     */
     public static void main(String[] args) {
     	List<String> list = new ArrayList<String>();
     	List<String> ccList = new ArrayList<String>();

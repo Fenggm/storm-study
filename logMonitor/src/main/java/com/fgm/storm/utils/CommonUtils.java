@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.fgm.storm.domain.LogMonitorApp;
 import com.fgm.storm.domain.LogMonitorRule;
@@ -16,9 +16,6 @@ import org.apache.commons.lang.StringUtils;
 
 
 public class CommonUtils implements Serializable{
-
-
-   private static  JSONObject object  = new JSONObject();
 
 
     private static  StringBuffer buffer = new StringBuffer();
@@ -53,7 +50,7 @@ public class CommonUtils implements Serializable{
 	 * 从数据库当中查询出所有appId对应的规则出来
 	 * 每分钟执行一次的定时查询，从数据库中捞出我们的匹配规则，存入到map当中去，供我们每条数据，随时进行匹配规则
 	 * 最终将查询出来的数据组织成一个map，map的key就是我们的appId，map的value就是一个set集合，set集合里面装的是
-	 * 我们log_monitor_rule对象转换之后的json格式的字符串。这里为啥要装字符串，不直接装一个对象？？？？
+	 * 我们log_monitor_rule对象转换之后的json格式的字符串。
 	 * 
 	 */
 	
@@ -63,7 +60,6 @@ public class CommonUtils implements Serializable{
 	 * 这个方法，就可以将我们数据库当中的所有的log_monitor_rule当中的数据都同步弄到map当中来存储
 	 */
 	public synchronized void monitorRule(){
-        JSONObject monitorRuleJson = new JSONObject();
         //将我们数据库当中 log_monitor_rule 这个表当中的所有的数据全部查询出来，
 		List<LogMonitorRule> query =utils.queryAllRules();
 		for (LogMonitorRule logMonitorRule : query) {
@@ -71,19 +67,15 @@ public class CommonUtils implements Serializable{
 				Integer appId = logMonitorRule.getAppId();
 				//判断如果我们的map当中已经包含了这个appId的值
 			if(monitorRule.containsKey(appId)){
-				monitorRuleJson.clear();
 				Set<String> set = monitorRule.get(appId);
-				String jsonString = monitorRuleJson.toJSONString(logMonitorRule);
+				String jsonString = JSON.toJSONString(logMonitorRule);
 				set.add(jsonString);
 				monitorRule.put(appId, set);
-				monitorRuleJson.clear();
 			}else{
-				monitorRuleJson.clear();
-				String ruleJson = monitorRuleJson.toJSONString(logMonitorRule);
+				String ruleJson = JSON.toJSONString(logMonitorRule);
 				Set<String> set = new HashSet<String>();
 				set.add(ruleJson);
 				monitorRule.put(appId, set);
-				monitorRuleJson.clear();
 			}
 		}
 		
@@ -115,11 +107,9 @@ public class CommonUtils implements Serializable{
 	 */
 	
 	public synchronized  void monitorUser(){
-            JSONObject logMonitorUserJson = new JSONObject();
 			List<LogMonitorUser> queryAllUser = utils.queryAllUser();
 			for (LogMonitorUser logMonitorUser : queryAllUser) {
-				logMonitorUserJson.clear();
-				String jsonString = logMonitorUserJson.toJSONString(logMonitorUser);
+				String jsonString = JSON.toJSONString(logMonitorUser);
 				if(monitorUser.containsKey(logMonitorUser.getChargeAppId())){
 					Set<String> set = monitorUser.get(logMonitorUser.getChargeAppId());
 					set.add(jsonString);
@@ -142,16 +132,14 @@ public class CommonUtils implements Serializable{
 	 * @return
 	 */
 	public static  String checkRules(String appId,String datas) {
-        JSONObject logMonitorRuleJson = new JSONObject();
 		Set<String> set = monitorRule.get(Integer.parseInt(appId));
 		String rule = "";
 		if(null != set && set.size() > 0){
 			for (String logMonitorRule : set) {
-				logMonitorRuleJson.clear();
-				LogMonitorRule logMonitor = logMonitorRuleJson.parseObject(logMonitorRule, LogMonitorRule.class);
+				LogMonitorRule logMonitor = JSON.parseObject(logMonitorRule, LogMonitorRule.class);
 				if(datas.contains(logMonitor.getKeyword())){
 					//匹配上了关键词，返回匹配的规则
-					rule = logMonitorRuleJson.toJSONString(logMonitorRule);
+					rule = JSON.toJSONString(logMonitorRule);
 					break;
 				}
 			}
@@ -175,8 +163,7 @@ public class CommonUtils implements Serializable{
             String datas = split[1];
             //通过appId查询出该APP对应的负责人
             //"#appname#=hello&#rid#=1&#keyword#=exception";
-            object.clear();
-            LogMonitorRule parseObject = object.parseObject(rule, LogMonitorRule.class);
+            LogMonitorRule parseObject = JSON.parseObject(rule, LogMonitorRule.class);
             LogMonitorApp logMonitorApp = CommonUtils.getMonitorAppMap().get(Integer.parseInt(appId));
             //组织我们的邮件发送的内容，拼接字符串
             String sendMsg = "#appname#="+logMonitorApp.getName()+"&#rid#="+parseObject.getRuleId()+"&#keyword#="+parseObject.getKeyword();
@@ -186,8 +173,7 @@ public class CommonUtils implements Serializable{
             List<String> mailList = new ArrayList<String>();
             //发送短信
             for (String string : set){
-                object.clear();
-                LogMonitorUser logMonitorUser = object.parseObject(string, LogMonitorUser.class);
+                LogMonitorUser logMonitorUser = JSON.parseObject(string, LogMonitorUser.class);
                 //		ShortMessageUtil.sendShortMessage(logMonitorUser.getMobile(), sendMsg);
                 mailList.add(logMonitorUser.getEmail());
             }
@@ -200,12 +186,11 @@ public class CommonUtils implements Serializable{
 
 
     public static void insertToDb(String rule,String errorLog){
-       JSONObject object  = new JSONObject();
         System.out.println(rule.replace("\\", ""));
         System.out.println(errorLog);
         rule = rule.replace("\\", "");
         rule = rule.substring(1, rule.length()-1);
-        LogMonitorRule logMonitorRule =object.parseObject(rule,LogMonitorRule.class);
+        LogMonitorRule logMonitorRule = JSON.parseObject(rule,LogMonitorRule.class);
         String[] split = errorLog.split("\001");
         LogMonitorRuleRecord record = new LogMonitorRuleRecord();
         record.setAppId(Integer.parseInt(split[0]));

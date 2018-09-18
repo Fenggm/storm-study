@@ -139,7 +139,7 @@
                                         implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>cn.itcast.logmonitor.LogMonitorMain</mainClass>
+                                    <mainClass>com.fgm.storm.logmonitor.LogMonitorMain</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>
