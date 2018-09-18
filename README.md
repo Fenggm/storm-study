@@ -1,4 +1,4 @@
-###storm-hdfs为storm与hdfs的结合使用.
+### storm-hdfs为storm与hdfs的结合使用.
 这里主要调用官方的API进行测试.  http://storm.apache.org/releases/1.1.2/storm-hdfs.html
 <br>
 其中,com.fgm.storm.stormack中为ack机制的测试案例.<br>
@@ -6,7 +6,7 @@
 因此，通过Ack机制，很容易做到保证所有数据均被处理，一条都不漏。<br>
 另外需要注意的，当spout触发fail动作时，不会自动重发失败的tuple，需要spout自己重新获取数据，手动重新再发送一次
 
-####如何使用ACK机制
+#### 如何使用ACK机制
 spout 在发送数据的时候带上msgid<br>
 设置acker数至少大于0；Config.setNumAckers(conf, ackerParal);
 <br>
